@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+{% load static %}
+<meta charset="utf-8">
+<title>Management</title>
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<link rel="stylesheet" href="{% static 'login.css' %}">
+<link rel="icon" type="image/x-icon" href="{% static 'Restaruant.jpg'  %}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body style="overflow:hidden">
+<div class="flexcontainer">
+<div style="background-color:#7F00FF;flex:1;display:flex;">
+<div style="padding-top:2.5px;padding-left:15px;"><img src='{% static "Restaruant.jpg" %}' style="height:70px;width:65px;margin-right:20px;background:transparent;"></div>
+<div id="title_setting" style="width:100%;font-size:60px;color:antiquewhite;"><i>Restaruant Management</i></div>
+<div>
+<a href="/logout">
+    <input type="button" value="logout" style="position:relative;top:30px;right:20px;cursor:pointer;" />
+</a>
+</div>
+</div>
+<div>
+<input type="button" id="Additem" value="Additem">
+<input type="button" id="AddFoodType" value="AddFoodType">
+{% if 'Admin' in request.session%}
+<input type="button" id="Addmanager" value="Addmanager">
+{% endif %}
+<input type="button" value="AddTable" id="AddTable">
+</div>
+<div id="form_place"></div>
+</body>
+<script type="text/javascript">
+$(document).ready(function(){
+$("#AddFoodType").click(function(){
+  $.ajax({url: "addType", success: function(result){
+    $("#form_place").html(result);
+  }});
+});
+$("#Additem").click(function(){
+  $.ajax({url: "addItem", success: function(result){
+    $("#form_place").html(result);
+  }});
+});
+$("#AddTable").click(function(){
+  $.ajax({url: "addTable", success: function(result){
+    $("#form_place").html(result);
+}});
+});
+$("#Addmanager").click(function(){
+  $.ajax({url: "addmanager", success: function(result){
+    $("#form_place").html(result);
+}});
+});
+});
+</script>
+<style>
+input[type=button]
+{
+  border:none;
+  border-bottom: 2px solid black;
+  margin: 10px;
+  cursor:pointer;
+  background-color: antiquewhite;
+}
+input[type=button]:focus
+{
+  outline:none;
+}
+</style>
+</html>

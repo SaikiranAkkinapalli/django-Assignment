@@ -1,0 +1,26 @@
+<div>
+<div style="display:flex;">
+<h1 style="position:absolute;cursor:pointer; transform: translateY(-25%);">Welcome to Restaruant your Table number {{tablenum}}</h1>
+<input type="button" value="Leave" style="position:absolute;cursor:pointer;right:30px; transform: translateY(70%);">
+</div>
+<h1 style="text-align:center">------MENU------</h1>
+<form>
+{% regroup item|dictsort:"type" by type as item_list %}
+<ul>
+    {% for type in item_list %}
+        <li>{{ type.grouper }}
+            <table>
+            {% for items in type.list %}
+                <tr><td><input type="checkbox" id={{item.id}}></td>
+                <td>{{ items.Name }}:</td> <td>{{ items.price }}</td>
+            {% endfor %}
+            </table>
+        </li>
+    {% endfor %}
+</ul>
+<table>
+<tr><td><input type="submit" value="Order"></td><td><input type="reset" value="cancel"></td></tr>
+</table>
+</form>
+</div>
+{%endif%}

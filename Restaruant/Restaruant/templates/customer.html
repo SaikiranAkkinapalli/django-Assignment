@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+{% load static %}
+<meta charset="utf-8">
+<title>Management</title>
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<link rel="stylesheet" href="{% static 'login.css' %}">
+<link rel="icon" type="image/x-icon" href="{% static 'Restaruant.jpg'  %}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body style="overflow:hidden">
+<div class="flexcontainer">
+<div style="background-color:#7F00FF;flex:1;display:flex;">
+<div style="padding-top:2.5px;padding-left:15px;"><img src='{% static "Restaruant.jpg" %}' style="height:70px;width:65px;margin-right:20px;background:transparent;"></div>
+<div id="title_setting" style="width:100%;font-size:60px;color:antiquewhite;"><i>Restaruant Management</i></div>
+<div>
+<a href="/logout">
+    <input type="button" value="logout" style="position:relative;top:30px;right:20px;cursor:pointer;" />
+</a>
+</div>
+</div>
+<div id="menusection">
+{% if 'tablenum' not in request.session%}
+<div id="form_place">
+<p><h1>Welcome to Restaruant</h1><p>
+<form id="NumberForm" action="verifyTableAvailability" method="POST">
+<table>
+    {% csrf_token %}
+    {{ form }}
+    <tr><td><input type="submit" value="Submit" class="butt"></td><td><input type="reset" value="cancel" class="butt"></td></tr>
+</table>
+</form>
+<div id="div_place" hidden>
+<table>
+<tr><p>Please Wait for Some time No tables are vacant</p></tr>
+<tr><td><input type="button" value="Stay" class="butt"></td>
+<td><input type="button" value="Leave" class="butt"></td></tr>
+</table>
+</div>
+<form>
+<div id="quantity" hidden>Quantity:<input type="number"></div>
+</form>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){
+$('#NumberForm').on('submit',(function(e) {
+    e.preventDefault();
+    e.stopPropagation(); 
+    var form = $(this);
+    var url = form.attr('action');
+    $.ajax({
+           type: "POST",
+           url: url,
+           data: form.serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+               window.location.reload();
+           },
+           error: function(data)
+           {
+                $("#div_place").show(); // the message
+           }
+        });
+    }));
+$("input:checkbox").change(function() { 
+            if($(this).is(":checked")) 
+                $("#quantity").show();
+            else 
+                $("#quantity").hide();
+}); 
+});
+</script>
+{% endif %}
+{% if 'tablenum' in request.session%}
+<div>
+<div style="display:flex;">
+<h1 style="position:absolute;transform: translateY(-25%);">Welcome to Restaruant your Table number {{tablenum}}</h1>
+<input type="button" value="Leave" id="checkout" style="position:absolute;cursor:pointer;right:30px; transform: translateY(90%);">
+</div>
+<div style="display:flex;flex-direction:column;">
+<h1 style="position:relative;text-align:center;top:50px;">------MENU------</h1>
+<div style="position:relative;top:50px;">
+<form id="orderForm" method="POST" action="order">
+{% csrf_token %}
+{% regroup item|dictsort:"type" by type as item_list %}
+<ul>
+    {% for type in item_list %}
+        <li>{{ type.grouper }}
+            <table>
+            {% for items in type.list %}
+                <tr><td>
+                {% if items.Remaining < 1 %}
+                <input type="checkbox" value="{{items.Name}}" disabled>
+                {% endif %}
+                {% if items.Remaining > 0 %}
+                <input type="checkbox" value="{{items.Name}}">
+                {% endif %}</td>
+                <td>{{ items.Name }}:</td> <td>{{ items.price }}</td>
+                <td> <td id="{{items.Name}}" hidden>Quantity:<input type="number" id="{{items.id}}" name="{{items.id}}"></td></td>
+                </tr>
+            {% endfor %}
+            </table>
+        </li>
+    {% endfor %}
+</ul>
+<table>
+<tr><td><input type="submit" value="Order" style="cursor:pointer"></td><td><input type="reset" value="cancel" style="cursor:pointer"></td></tr>
+</table>
+</form>
+<div id="order" hidden><b>Ordered Successfully</b></div>
+</div>
+</div>
+</div>
+<script>
+$(document).ready(function(){
+$("input:checkbox").change(function() { 
+    var rssId = $(this).attr('value')
+    if($(this).is(":checked")) 
+        $("#"+rssId).show();
+    else 
+        $("#"+rssId).hide();
+}); 
+$('#orderForm').on('submit',(function(e) {
+    e.preventDefault();
+    e.stopPropagation(); 
+    var form = $(this);
+    var url = form.attr('action');
+    $.ajax({
+           type: "POST",
+           url: url,
+           data: form.serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+               $("#order").html(data);
+               $("#order").show();
+           },
+           error: function(data)
+           {
+                $("#div_place").show(); // the message
+           }
+        });
+    }));
+$('#checkout').on('click',(function(e) {
+    e.preventDefault();
+    e.stopPropagation(); 
+    $.ajax({ 
+           url: 'checkout', 
+           success: function(data)
+           {
+               alert(data)
+               window.location.reload();
+           },
+           error: function(data)
+           {
+                $("#div_place").show(); // the message
+           }
+        });
+    }));
+});
+</script>
+{%endif%}
+</div>
+</body>
+<style>
+input[type=number]
+{
+  border:none;
+  border-bottom: 2px solid black;
+  margin: 10px;
+  background-color: white;
+}
+input[type=number]:focus
+{
+  outline:none;
+}
+.butt
+{
+    width:75px;height:30px;padding-left:5px;border:4px solid #7F00FF;border-top-left-radius:20px;border-bottom-left-radius:20px;border-top-right-radius:20px;border-bottom-right-radius:20px;margin-right:20px;
+}
+.butt:hover
+{
+    cursor:pointer
+}
+</style>
+
+</html>
+
