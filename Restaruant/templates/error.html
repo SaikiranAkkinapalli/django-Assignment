@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+{% load static %}
+<meta charset="utf-8">
+<title>Management</title>
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<link rel="stylesheet" href="{% static 'login.css' %}">
+<link rel="icon" type="image/x-icon" href="{% static 'Restaruant.jpg'  %}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body style="overflow:hidden">
+<div class="flexcontainer">
+<div style="background-color:#7F00FF;flex:1;display:flex;">
+<div style="padding-top:2.5px;padding-left:15px;"><img src='{% static "Restaruant.jpg" %}' style="height:70px;width:65px;margin-right:20px;background:transparent;"></div>
+<div id="title_setting" style="width:100%;font-size:60px;color:antiquewhite;"><i>Restaruant Management</i></div></div>
+<div>
+<p style="size:30px;">{{error}}</p>
+</div>
+</body>
+</html>

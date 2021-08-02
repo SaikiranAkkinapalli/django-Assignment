@@ -39,7 +39,7 @@
 {% endif %}
 </form>
 </div>
-<div id="signup" style="top:0.5px;transition:.5s;position:absolute;left:450px;">
+<div id="signup" style="top:0.25px;transition:.5s;position:absolute;left:450px;">
 <form id="signup-form" action="/signup" method="POST">
 <table>
 {% csrf_token %}
@@ -48,6 +48,21 @@
 <tr><td><input type="submit" style="margin:15px;"></td><td><input type="Reset" value="cancel"></td></tr>
 </table>
 </form>
+{% for error  in SignUp.first_name.errors %}
+<b style="position:relative;color:#7F00FF;top:-10px;">{{error}}</b>
+{% endfor %}
+{% for error  in SignUp.last_name.errors %}
+<b style="position:relative;color:#7F00FF;top:-10px;">{{error}}</b>
+{% endfor %}
+{% for error  in SignUp.Email.errors %}
+<b style="position:relative;color:#7F00FF;top:-10px;">{{error}}</b>
+{% endfor %}
+{% for error  in SignUp.phonenumber.errors %}
+<b style="position:relative;color:#7F00FF;top:-10px;">{{error}}</b>
+{% endfor %}
+{% for error  in SignUp.password.errors %}
+<b style="position:relative;color:#7F00FF;top:-10px;">{{error}}</b>
+{% endfor %}
 {% if Success %}
 <b style="position:relative;color:#7F00FF;top:-10px;">User Created Successfully</b>
 {% endif %}
@@ -57,6 +72,12 @@
 </div>
 </div>
 </div>
+<style>
+.errorlist
+{
+   display: none;
+}
+</style>
 <script>
 function login()
 {

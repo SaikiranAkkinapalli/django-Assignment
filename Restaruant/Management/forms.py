@@ -1,6 +1,38 @@
 from django.forms import ModelForm
 from django import forms
 from .models import UserModel, item,foodtype, table
+import re
+def name_check(name):
+    SpecialSym =['$', '@', '#', '%','!']
+    val = True
+    if any(char in SpecialSym for char in name):
+        print('Password should have at least one of the symbols $@#')
+        return False
+    if val:
+        return val
+def password_check(passwd):
+    SpecialSym =['$', '@', '#', '%','!']
+    val = True
+    if len(passwd) < 6:
+        print('length should be at least 6')
+        return False
+    if len(passwd) > 20:
+        print('length should be not be greater than 8')
+        return False
+    if not any(char.isdigit() for char in passwd):
+        print('Password should have at least one numeral')
+        return False
+    if not any(char.isupper() for char in passwd):
+        print('Password should have at least one uppercase letter')
+        return False
+    if not any(char.islower() for char in passwd):
+        print('Password should have at least one lowercase letter')
+        return False
+    if not any(char in SpecialSym for char in passwd):
+        print('Password should have at least one of the symbols $@#')
+        return False
+    if val:
+        return val
 class Additem(ModelForm):
     class Meta:
         model = item
@@ -23,6 +55,21 @@ class SignUpForm(ModelForm):
         'password': forms.PasswordInput(),
         'Email': forms.EmailInput(),
     }
+    def clean_first_name(self):
+        data=self.cleaned_data.get('first_name')
+        if not name_check(data):
+            raise forms.ValidationError('The First_Name Should not Contain Special Characters')
+        return data
+    def clean_last_name(self):
+        data=self.cleaned_data.get('last_name')
+        if not name_check(data):
+            raise forms.ValidationError('The Last_Name Should not Contain Special Characters')
+        return data
+    def clean_password(self):
+        data=self.cleaned_data.get('password')
+        if not password_check(data):
+            raise forms.ValidationError('The Password should have at least 1 uppercase,1lowercase,1special character')
+        return data
 class LoginForm(forms.Form):
     UserSign = forms.CharField(label='Email or Phone:',widget=forms.TextInput)
     password = forms.CharField(label='Password:', widget=forms.PasswordInput)

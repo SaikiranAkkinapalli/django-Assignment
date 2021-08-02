@@ -15,9 +15,12 @@ def home(request):
         return render(request,'index.html')
     if request.method=="POST":
         user = authenticate(username=request.POST.get('UserSign'), password=request.POST.get('password'))
-        if user.is_admin==True:
-            request.session['Admin']=True
         if user is not None:
+            if user.is_admin==True:
+                request.session['Admin']=True
+            if user.customer==True:
+                request.session['customer']=True
+                return render(request,'customer.html')
             login(request,user)
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
@@ -25,15 +28,19 @@ def home(request):
     form1= SignUpForm()
     form2= LoginForm()
     return render(request,'login.html',{'Login':form2,'SignUp':form1})
+@login_required(login_url='/')
 def customer(request):
-    if 'tablenum' in request.session:
-        tablenum=request.session['tablenum']
-        item_list = (item.objects.values('type','Name','price','id','Remaining').annotate(dcount=Count('type')).order_by())
-        return render(request,'customer.html',{"tablenum":tablenum,"item":item_list})
-    form=CustomerForm
-    submission="verifyTableAvailability"
-    return render(request,'customer.html',{"form":form,"submission":submission})
+    if 'customer' in request.session:
+        if 'tablenum' in request.session:
+            tablenum=request.session['tablenum']
+            item_list = (item.objects.values('type','Name','price','id','Remaining').annotate(dcount=Count('type')).order_by())
+            return render(request,'customer.html',{"tablenum":tablenum,"item":item_list})
+        form=CustomerForm
+        submission="verifyTableAvailability"
+        return render(request,'customer.html',{"form":form,"submission":submission})
 def tableAvailability(request):
+    if request.method=="GET":
+        return render(request,'error.html',{'error':"No Add Manager"})
     if request.method=="POST":
         number=request.POST['No_Of_People']
         entry = table.objects.filter(Seating_Capacity__gte=number).exclude(Available=False)
@@ -48,6 +55,8 @@ def tableAvailability(request):
     response.status_code = 503
     return response
 def addItem(request):
+    if request.method=="GET":
+        return render(request,'error.html',{'error':"No Add Manager"})
     if request.is_ajax:
         form=Additem()
         submission="addItem"
@@ -62,6 +71,8 @@ def addItem(request):
     return HttpResponse("Page not found")
 def addFoodType(request):
     boolinsert=False
+    if request.method=="GET":
+        return render(request,'error.html',{'error':"No Add Manager"})
     if request.method=="POST":
         form=AddFoodtype(request.POST)
         if form.is_valid():
@@ -72,6 +83,8 @@ def addFoodType(request):
     return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
 def addTable(request):
     boolinsert=False
+    if request.method=="GET":
+        return render(request,'error.html',{'error':"No Add Manager"})
     if request.method=="POST":
         form=AddTable(request.POST)
         if form.is_valid():
@@ -82,6 +95,8 @@ def addTable(request):
     return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
 def addManager(request):
     boolinsert=False
+    if request.method=="GET":
+        return render(request,'error.html',{'error':"No Add Manager"})
     if request.method=="POST":
         form=SignUpForm(request.POST)
         if form.is_valid():
@@ -91,6 +106,8 @@ def addManager(request):
     submission="addManager"
     return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
 def orderrecieve(request):
+    if request.method=="GET":
+        return render(request,'error.html',{'error':"No Add Manager"})
     if request.method=="POST":
         tablenum=request.session['tablenum']
         current_table=table.objects.get(id=tablenum)
@@ -103,6 +120,8 @@ def orderrecieve(request):
                 items.save()
         return HttpResponse("Ordered Succesfully", content_type="text/plain")
 def checkout(request):
+    if 'tablenum' not in request:
+        return render(request,'error.html',{'error':"No Add Manager"})
     tablenum=request.session['tablenum']
     current_table=table.objects.get(id=tablenum)
     bill=current_table.presentbill
@@ -117,10 +136,18 @@ def signup(request):
     form1= SignUpForm()
     form2= LoginForm()
     if request.method=="POST":
-        user = UserModel.objects.create_user(request.POST.get('first_name'),request.POST.get('last_name'),request.POST.get("Email"), request.POST.get("phonenumber"), request.POST.get("password"))
-        user.save()
-        return render(request,"login.html",{"Login":form2,"SignUp":form1,"Success":True})
-    return render(request,"login.html",{"Login":form2,"SignUp":form1})
+        form=SignUpForm(request.POST)
+        if form.is_valid():
+            user = UserModel.objects.create_customer(request.POST.get('first_name'),request.POST.get('last_name'),request.POST.get("Email"), request.POST.get("phonenumber"), request.POST.get("password"))
+            user.save()
+            return render(request,'login.html',{'Login':form2,'SignUp':form1,"Success":True})
+        else:
+            context={
+                "Login":LoginForm(),
+                "SignUp":form
+            }
+            return render(request,'login.html',context)
+    return render(request,'login.html',{'Login':form2,'SignUp':form1})
 def loggingout(request):
     print(request)
     logout(request)

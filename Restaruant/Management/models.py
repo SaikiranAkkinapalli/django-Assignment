@@ -27,6 +27,7 @@ class UserManager(BaseUserManager):
             phonenumber=phonenumber,
             Email=self.normalize_email(Email))
         user.set_password(password)
+        user.is_staff=True
         user.save(using=self.db)
         return user
     def create_superuser(self,first_name,last_name,Email,password,phonenumber):
@@ -36,12 +37,27 @@ class UserManager(BaseUserManager):
         user.is_superuser=True
         user.save(using=self.db)
         return user
+    def create_customer(self,first_name,last_name,Email,password,phonenumber):
+        if not Email:
+            return ValueError("User Must have an valid Email Address")
+        if not phonenumber:
+            return ValueError("User Must have an phonenumber")
+        user=self.model(
+            first_name=first_name,
+            last_name=last_name,
+            phonenumber=phonenumber,
+            Email=self.normalize_email(Email))
+        user.customer=True
+        user.set_password(password)
+        user.save(using=self.db)
+        return user
 class UserModel(AbstractBaseUser):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     Email = models.EmailField(max_length=100,unique=True)
     phonenumber = models.CharField(max_length=20,primary_key=True)
     password = models.CharField(max_length=200)
+    customer=models.BooleanField(default=False)
     is_admin=models.BooleanField(default=False)
     is_staff=models.BooleanField(default=False)
     is_active=models.BooleanField(default=True)
