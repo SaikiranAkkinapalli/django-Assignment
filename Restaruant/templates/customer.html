@@ -1,7 +1,9 @@
-<html>
+<!doctype html>
+<html lang="en">
 <head>
 {% load static %}
-<title>Restaruant Management</title>
+<meta charset="utf-8">
+<title>Management</title>
 <link rel="stylesheet" href="{% static 'index.css' %}">
 <link rel="stylesheet" href="{% static 'login.css' %}">
 <link rel="icon" type="image/x-icon" href="{% static 'Restaruant.jpg'  %}">
@@ -9,17 +11,23 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body style="overflow:hidden">
+<div class="flexcontainer">
 <div style="background-color:#7F00FF;flex:1;display:flex;">
 <div style="padding-top:2.5px;padding-left:15px;"><img src='{% static "Restaruant.jpg" %}' style="height:70px;width:65px;margin-right:20px;background:transparent;"></div>
 <div id="title_setting" style="width:100%;font-size:60px;color:antiquewhite;"><i>Restaruant Management</i></div>
+<div>
+<a href="/logout">
+    <input type="button" value="logout" style="position:relative;top:30px;right:20px;cursor:pointer;" />
+</a>
+</div>
 </div>
 <div id="menusection">
 {% if 'tablenum' not in request.session%}
 <div id="form_place">
 <p><h1>Welcome to Restaruant</h1><p>
-<form id="NumberForm" action="{{submission}}" method="POST">
+<form id="NumberForm" action="verifyTableAvailability" method="POST">
 <table>
-{% csrf_token %}
+    {% csrf_token %}
     {{ form }}
     <tr><td><input type="submit" value="Submit" class="butt"></td><td><input type="reset" value="cancel" class="butt"></td></tr>
 </table>
@@ -39,7 +47,7 @@
 $(document).ready(function(){
 $('#NumberForm').on('submit',(function(e) {
     e.preventDefault();
-     e.stopPropagation(); 
+    e.stopPropagation(); 
     var form = $(this);
     var url = form.attr('action');
     $.ajax({

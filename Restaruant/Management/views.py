@@ -23,9 +23,7 @@ def home(request):
                 request.session['Manager']=True
             if user.customer==True:
                 request.session['customer']=True
-                form=CustomerForm()
-                submission="verifyTableAvailability"
-                return render(request,'customer.html',{"form":form,"submission":submission})
+                return redirect('/customer')
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
             return render(request,'index.html')
@@ -46,7 +44,6 @@ def customer(request):
 def tableAvailability(request):
     if request.method=="POST":
         number=request.POST['No_Of_People']
-        print(number)
         entry = table.objects.filter(Seating_Capacity__gte=number).exclude(Available=False)
         if entry.exists():
             entry=entry.order_by('Seating_Capacity').first()
@@ -54,7 +51,7 @@ def tableAvailability(request):
             entry.Available=False
             entry.save()
             request.session['tablenum']=tablenum
-            return render(request,'menu.html',{"tablenum":tablenum})
+            return redirect('/customer')
     response = JsonResponse({"error": "No Vacancy"})
     response.status_code = 503
     return response
@@ -118,6 +115,7 @@ def addManager(request):
         submission="addmanager"
         if request.method=="POST":
             form=SignUpForm(request.POST)
+            print(form.is_valid())
             if form.is_valid():
                 user = UserModel.objects.create_user(request.POST.get('first_name'),request.POST.get('last_name'),request.POST.get("Email"), request.POST.get("phonenumber"), request.POST.get("password"))
                 user.save()
@@ -144,8 +142,6 @@ def orderrecieve(request):
                 items.save()
         return HttpResponse("Ordered Succesfully", content_type="text/plain")
 def checkout(request):
-    if 'tablenum' not in request:
-        return render(request,'error.html',{'error':"No Add Manager"})
     tablenum=request.session['tablenum']
     current_table=table.objects.get(id=tablenum)
     bill=current_table.presentbill
