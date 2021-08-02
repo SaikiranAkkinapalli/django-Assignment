@@ -15,15 +15,17 @@ def home(request):
         return render(request,'index.html')
     if request.method=="POST":
         user = authenticate(username=request.POST.get('UserSign'), password=request.POST.get('password'))
-        print(request.POST.get('UserSign')+request.POST.get('password'))
         if user is not None:
+            login(request,user)
             if user.is_admin==True:
                 request.session['Admin']=True
+            if user.is_admin==False and user.is_staff==True:
+                request.session['Manager']=True
             if user.customer==True:
                 request.session['customer']=True
-                form=CustomerForm
-                return render(request,'customer.html',{"form":form})
-            login(request,user)
+                form=CustomerForm()
+                submission="verifyTableAvailability"
+                return render(request,'customer.html',{"form":form,"submission":submission})
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
             return render(request,'index.html')
@@ -40,11 +42,11 @@ def customer(request):
         form=CustomerForm
         submission="verifyTableAvailability"
         return render(request,'customer.html',{"form":form,"submission":submission})
+@login_required(login_url='/')
 def tableAvailability(request):
-    if request.method=="GET":
-        return render(request,'error.html',{'error':"No Add Manager"})
     if request.method=="POST":
         number=request.POST['No_Of_People']
+        print(number)
         entry = table.objects.filter(Seating_Capacity__gte=number).exclude(Available=False)
         if entry.exists():
             entry=entry.order_by('Seating_Capacity').first()
@@ -56,9 +58,15 @@ def tableAvailability(request):
     response = JsonResponse({"error": "No Vacancy"})
     response.status_code = 503
     return response
+@login_required(login_url='/')
 def addItem(request):
     if request.method=="GET":
-        return render(request,'error.html',{'error':"No Add Manager"})
+        if 'Admin' in request.session or 'Manager' in request.session:
+            form=Additem()
+            submission="addItem"
+            return render(request,'form.html',{'form':form,'submission':submission}) 
+        else:
+            return render(request,'error.html',{'error':"No View"})
     if request.is_ajax:
         form=Additem()
         submission="addItem"
@@ -71,45 +79,59 @@ def addItem(request):
                 return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
         return render(request,'form.html',{'form':form,'submission':submission})
     return HttpResponse("Page not found")
+@login_required(login_url='/')
 def addFoodType(request):
     boolinsert=False
     if request.method=="GET":
-        return render(request,'error.html',{'error':"No Add Manager"})
-    if request.method=="POST":
-        form=AddFoodtype(request.POST)
-        if form.is_valid():
-            form.save()
-            boolinsert=True
+        if 'Admin' not in request.session and 'Manager' not in request.session:
+            return render(request,'error.html',{'error':"No View"})
+    if request.method=="POST" :
+        if 'Admin' in request.session or 'Manager' in request.session:
+            form=AddFoodtype(request.POST)
+            if form.is_valid():
+                form.save()
+                boolinsert=True
     form=AddFoodtype()
     submission="addType"
     return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
+@login_required(login_url='/')
 def addTable(request):
     boolinsert=False
     if request.method=="GET":
-        return render(request,'error.html',{'error':"No Add Manager"})
+        if 'Admin' not in request.session and 'Manager' not in request.session:
+            return render(request,'error.html',{'error':"No View"})
     if request.method=="POST":
-        form=AddTable(request.POST)
-        if form.is_valid():
-            form.save()
-            boolinsert=True
+        if 'Admin' in request.session or 'Manager' in request.session:
+            form=AddTable(request.POST)
+            if form.is_valid():
+                form.save()
+                boolinsert=True
+        else:
+            return render(request,'error.html',{'error':"No View"})
     form=AddTable()
     submission="addTable"
     return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
+@login_required(login_url='/')
 def addManager(request):
-    boolinsert=False
-    if request.method=="GET":
-        return render(request,'error.html',{'error':"No Add Manager"})
-    if request.method=="POST":
-        form=SignUpForm(request.POST)
-        if form.is_valid():
-            form.save()
-            boolinsert=True
-    form=SignUpForm()
-    submission="addManager"
-    return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
+    if 'Admin' in request.session:
+        boolinsert=False
+        submission="addmanager"
+        if request.method=="POST":
+            form=SignUpForm(request.POST)
+            if form.is_valid():
+                user = UserModel.objects.create_user(request.POST.get('first_name'),request.POST.get('last_name'),request.POST.get("Email"), request.POST.get("phonenumber"), request.POST.get("password"))
+                user.save()
+                boolinsert=True
+            else :
+                context={
+                "form":form,
+                "boolinsert":False
+                }
+                return render(request,'form.html',context)
+        form=SignUpForm()
+        return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
+@login_required(login_url='/')
 def orderrecieve(request):
-    if request.method=="GET":
-        return render(request,'error.html',{'error':"No Add Manager"})
     if request.method=="POST":
         tablenum=request.session['tablenum']
         current_table=table.objects.get(id=tablenum)
