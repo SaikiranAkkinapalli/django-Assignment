@@ -2,6 +2,11 @@ from django.forms import ModelForm
 from django import forms
 from .models import UserModel, item,foodtype, table
 import re
+def check_phone_number(number):
+    if len(number)>10:
+        return False
+    if not re.match("[6-9]{1}[0-9]{9}", number):
+        return False
 def name_check(name):
     SpecialSym =['$', '@', '#', '%','!']
     val = True
@@ -17,19 +22,14 @@ def password_check(passwd):
         print('length should be at least 6')
         return False
     if len(passwd) > 20:
-        print('length should be not be greater than 8')
         return False
     if not any(char.isdigit() for char in passwd):
-        print('Password should have at least one numeral')
         return False
     if not any(char.isupper() for char in passwd):
-        print('Password should have at least one uppercase letter')
         return False
     if not any(char.islower() for char in passwd):
-        print('Password should have at least one lowercase letter')
         return False
     if not any(char in SpecialSym for char in passwd):
-        print('Password should have at least one of the symbols $@#')
         return False
     if val:
         return val
@@ -64,6 +64,11 @@ class SignUpForm(ModelForm):
         data=self.cleaned_data.get('last_name')
         if not name_check(data):
             raise forms.ValidationError('The Last_Name Should not Contain Special Characters')
+        return data
+    def clean_phonenumber(self):
+        data=self.cleaned_data.get('phonenumber')
+        if not check_phone_number(data):
+            raise forms.ValidationError('Enter Valid Phonenumber')
         return data
     def clean_password(self):
         data=self.cleaned_data.get('password')

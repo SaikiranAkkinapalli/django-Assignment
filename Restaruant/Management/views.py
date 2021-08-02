@@ -15,12 +15,14 @@ def home(request):
         return render(request,'index.html')
     if request.method=="POST":
         user = authenticate(username=request.POST.get('UserSign'), password=request.POST.get('password'))
+        print(request.POST.get('UserSign')+request.POST.get('password'))
         if user is not None:
             if user.is_admin==True:
                 request.session['Admin']=True
             if user.customer==True:
                 request.session['customer']=True
-                return render(request,'customer.html')
+                form=CustomerForm
+                return render(request,'customer.html',{"form":form})
             login(request,user)
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
@@ -138,7 +140,7 @@ def signup(request):
     if request.method=="POST":
         form=SignUpForm(request.POST)
         if form.is_valid():
-            user = UserModel.objects.create_customer(request.POST.get('first_name'),request.POST.get('last_name'),request.POST.get("Email"), request.POST.get("phonenumber"), request.POST.get("password"))
+            user = UserModel.objects.create_customer(request.POST.get('first_name'),request.POST.get('last_name'),request.POST.get("Email"), request.POST.get("password"), request.POST.get("phonenumber"))
             user.save()
             return render(request,'login.html',{'Login':form2,'SignUp':form1,"Success":True})
         else:
@@ -152,3 +154,5 @@ def loggingout(request):
     print(request)
     logout(request)
     return redirect(home)
+def error_404(request, exception):
+    return render(request,'error.html',{'error':"No View"})
