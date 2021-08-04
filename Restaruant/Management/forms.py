@@ -7,6 +7,14 @@ def check_phone_number(number):
         return False
     if not re.match("[6-9]{1}[0-9]{9}", number):
         return False
+def number_check(number):
+    if not re.match("[0-9]", number):
+        return False
+    return True
+def price_check(number):
+    if not re.match("[0-9][.][0-9]{2}", number):
+        return False
+    return True
 def name_check(name):
     SpecialSym =['$', '@', '#', '%','!']
     val = True
@@ -37,16 +45,45 @@ class Additem(ModelForm):
     class Meta:
         model = item
         fields=['id','Name','Remaining','price','type']
+    def clean_id(self):
+        data=self.cleaned_data.get('id')
+        if not number_check(data):
+            raise forms.ValidationError('The Id Should be a number')
+        return data
+    def clean_Remaining(self):
+        data=self.cleaned_data.get('Remaining')
+        if not number_check(data):
+            raise forms.ValidationError('The Remaining items should be a number')
+        return data
+    def clean_Remaining(self):
+        data=self.cleaned_data.get('price')
+        if not price_check(data):
+            raise forms.ValidationError('The price should be a float')
+        return data
+    def clean_Name(self):
+        data=self.cleaned_data.get('Name')
+        if not name_check(data):
+            raise forms.ValidationError('The Item Name Should not Contain Special Characters')
+        return data
 class AddFoodtype(ModelForm):
     class Meta:
         model=foodtype
         fields=['type']
+    def clean_type(self):
+        data=self.cleaned_data.get('type')
+        if not name_check(data):
+            raise forms.ValidationError('The Food Type Should not Contain Special Characters')
+        return data
 class AddTable(ModelForm):
     class Meta:
         model=table
         fields=['id','Seating_Capacity']
 class CustomerForm(forms.Form):
     No_Of_People = forms.IntegerField(label='No.of People')
+    def clean_Remaining(self):
+        data=self.cleaned_data.get('No_Of_People')
+        if not number_check(data):
+            raise forms.ValidationError('The number of people should be number')
 class SignUpForm(ModelForm):
     class Meta:
         model = UserModel
