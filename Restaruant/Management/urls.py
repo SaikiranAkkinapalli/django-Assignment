@@ -13,4 +13,5 @@ urlpatterns = [
     path('signup',views.signup),
     path('ShowBill',views.ShowBill),
     path('logout',views.loggingout),
+    path('getbill',views.bill_download),
 ]

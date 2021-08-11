@@ -12,6 +12,9 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.contrib.auth import logout
 from django.db.models import Sum
+import io
+from django.http import FileResponse
+from reportlab.pdfgen import canvas
 def home(request):
     if request.user.is_authenticated: 
         return render(request,'index.html')
@@ -158,7 +161,7 @@ def orderrecieve(request):
                     items.Remaining=items.Remaining-int(request.POST.get(str(items.id)))
                     current_table.save()
                     items.save()
-        print(ordered_items)
+        print(type(ordered_items))
         request.session['ordered_items']=ordered_items
         return HttpResponse("Ordered Succesfully", content_type="text/plain")
 def checkout(request):
@@ -199,3 +202,11 @@ def ShowBill(request):
     return render(request,'bill.html',{'bill_list':bill_list,'total_amount':total_amount['totalbill__sum']})
 def error_404(request, exception):
     return render(request,'error.html',{'error':"No View"})
+def bill_download(request):
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer)
+    p.drawString(100, 700,eval(request.session['ordered_items']))
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='bill.pdf')
