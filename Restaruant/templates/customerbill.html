@@ -1,0 +1,15 @@
+<table>
+<tr><td>Item</td><td>Quantity</td>
+{% for key,value in ordered_items.items %}
+<tr>
+<td>{{key}}</td><td>{{ value }}</td>
+</tr>
+{% endfor %}
+<tr><td>Total Bill</td><td>{{bill}}</td>
+<tr><td><input type="button" value="Checkout"></td></tr>
+</table>
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>

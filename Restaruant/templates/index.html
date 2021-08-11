@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="{% static 'login.css' %}">
 <link rel="icon" type="image/x-icon" href="{% static 'Restaruant.jpg'  %}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body style="overflow:hidden">
@@ -17,56 +18,111 @@
 <div id="title_setting" style="width:100%;font-size:60px;color:antiquewhite;"><i>Restaruant Management</i></div>
 <div>
 <a href="/logout">
-    <input type="button" value="logout" style="position:relative;top:30px;right:20px;cursor:pointer;" />
+    <input type="button" value="logout" style="position:relative;top:15px;right:20px;cursor:pointer;height:30px;width:75px;" />
 </a>
 </div>
 </div>
-<div>
+<div style="display:flex;">
+<div style="display:flex;flex-direction:column;background-color: #f1f1f1;height:400px;padding-top:12.5px;justify-content: space-between;" id="Sidebar">
 <input type="button" id="Additem" value="Additem">
-<input type="button" id="AddFoodType" value="AddFoodType">
+<input type="button" id="AddFoodType" value="AddFoodType" >
 {% if 'Admin' in request.session%}
 <input type="button" id="Addmanager" value="Addmanager">
 {% endif %}
 <input type="button" value="AddTable" id="AddTable">
+<input type="button" value="ShowBill" id="ShowBill" style="margin-bottom:5px;">
 </div>
-<div id="form_place"></div>
+<div id="form_place" style="background-color: #f1f1f1;margin-left:50px;padding-top:20px;border-radius:25px; border: 2px solid #7F00FF;padding-left:25px;padding-right:25px;margin-top:12.5px;" hidden></div>
+</div>
 </body>
 <script type="text/javascript">
 $(document).ready(function(){
 $("#AddFoodType").click(function(){
   $.ajax({url: "addType", success: function(result){
+    $("#form_place").show();
     $("#form_place").html(result);
   }});
 });
 $("#Additem").click(function(){
   $.ajax({url: "addItem", success: function(result){
+    $("#form_place").show();
     $("#form_place").html(result);
   }});
 });
 $("#AddTable").click(function(){
   $.ajax({url: "addTable", success: function(result){
+    $("#form_place").show();
     $("#form_place").html(result);
 }});
 });
 $("#Addmanager").click(function(){
   $.ajax({url: "addmanager", success: function(result){
+    $("#form_place").show();
+    $("#form_place").html(result);
+}});
+});
+$("#ShowBill").click(function(){
+  $.ajax({url: "ShowBill", success: function(result){
+    $("#form_place").show();
     $("#form_place").html(result);
 }});
 });
 });
 </script>
 <style>
-input[type=button]
+#Sidebar>input[type=button]
 {
-  border:none;
-  border-bottom: 2px solid black;
-  margin: 10px;
   cursor:pointer;
-  background-color: antiquewhite;
+  outline:none;
+  margin-right:2.5px;
+  border:none;
+  width: 120px;
+  height: 40px;
+  border-radius: 5px;
 }
-input[type=button]:focus
+#Sidebar>input[type=button]:hover
 {
+  cursor:pointer;
+  outline:none;
+  margin-right:2.5px;
+  border:none;
+  width: 120px;
+  height: 40px;
+  border-radius: 5px;
+  background-image: radial-gradient(circle at 0px 20px, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 20px, darkviolet 40px);
+  color: #FFF;
+}
+#Sidebar>input[type=button].selected
+{
+  cursor:pointer;
+  outline:none;
+  margin-right:2.5px;
+  border:none;
+  width: 120px;
+  height: 40px;
+  border-radius: 5px;
+  background-image: radial-gradient(circle at 0px 20px, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 20px, darkviolet 40px);
+  color: #FFF;
+  outline:none;
+}
+#Sidebar>input[type=button]:focus
+{
+  cursor:pointer;
+  outline:none;
+  margin-right:2.5px;
+  border:none;
+  width: 120px;
+  height: 40px;
+  border-radius: 5px;
+  background-image: radial-gradient(circle at 0px 20px, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 20px, darkviolet 40px);
+  color: #FFF;
   outline:none;
 }
 </style>
+<script>
+$('input:button').on('click', function(){
+    $('input:button').removeClass('selected');
+    $(this).addClass('selected');
+})
+</script>
 </html>

@@ -77,17 +77,19 @@ $("input:checkbox").change(function() {
 <div>
 <div style="display:flex;">
 <h1 style="position:absolute;transform: translateY(-25%);">Welcome to Restaruant your Table number {{tablenum}}</h1>
-<input type="button" value="Leave" id="checkout" style="position:absolute;cursor:pointer;right:30px; transform: translateY(90%);">
+<input type="button" value="Get the Bill" id="checkout" style="position:absolute;cursor:pointer;right:30px; transform: translateY(90%);">
 </div>
-<div style="display:flex;flex-direction:column;">
 <h1 style="position:relative;text-align:center;top:50px;">------MENU------</h1>
+<div style="display:flex;flex-direction:column;">
 <div style="position:relative;top:50px;">
 <form id="orderForm" method="POST" action="order">
 {% csrf_token %}
 {% regroup item|dictsort:"type" by type as item_list %}
-<ul>
+<div class="tab" style="display:flex;flex-direction:column;position:relative;">
     {% for type in item_list %}
-        <li>{{ type.grouper }}
+    <div class="dropdown">
+        <a href="#{{ type.grouper }}" class="dropbtn"><b><i>{{ type.grouper }}</i></b></a>   
+            <div id="{{ type.grouper }}" class="dropdown-content">
             <table>
             {% for items in type.list %}
                 <tr><td>
@@ -95,32 +97,74 @@ $("input:checkbox").change(function() {
                 <input type="checkbox" value="{{items.Name}}" disabled>
                 {% endif %}
                 {% if items.Remaining > 0 %}
-                <input type="checkbox" value="{{items.Name}}">
+                <input type="checkbox" value="{{items.Name}}" name="{{items.Name}}">
                 {% endif %}</td>
-                <td>{{ items.Name }}:</td> <td>{{ items.price }}</td>
-                <td> <td id="{{items.Name}}" hidden>Quantity:<input type="number" id="{{items.id}}" name="{{items.id}}"></td></td>
+                <td><p>{{ items.Name }}:</p></td> <td><p>{{ items.price }}</p></td>
+                <td> <span class="{{items.Name}}" hidden>Quantity:<input type="number" id="{{items.id}}" name={{items.id}} style="width:30px;" min="1" max={{items.Remaining}} onkeydown="return false //return value false" value="1"><span value="{{items.id}}" class="increment" style="margin-left:7.5px;"><input type="button" value="+" style="cursor:pointer"></span><span class="decrement" value="{{items.id}}" style="margin-left:7.5px;margin-right:15px;"><input type="button" value="-" style="cursor:pointer"></span><div id="{{items.Name}}" style="margin-top:10px;" hidden><span style="font-size:18px;margin-right:5px;margin-left:15px;"><b>{{items.Name}}:</b></span><span class="{{items.id}}" style="font-size:18px;">1</span></div></td>
                 </tr>
             {% endfor %}
             </table>
-        </li>
+            </div>
+            </div>
     {% endfor %}
-</ul>
+</div>
 <table>
 <tr><td><input type="submit" value="Order" style="cursor:pointer"></td><td><input type="reset" value="cancel" style="cursor:pointer"></td></tr>
 </table>
 </form>
 <div id="order" hidden><b>Ordered Successfully</b></div>
+<div style="position:absolute;right:0px;top:0px;width:400px;height:400px;background-color:#f1f1f1;display:flex;flex-direction:column;">
+<div style="text-align: center;font-size:20px;margin-top:5px;"><b>------Your Orders------</b></div>
+{% if 'ordered_items' in request.session%}
+<div>
+{% for x in request.session.ordered_items %}
+<div id="{{items.Name}}" style="margin-top:10px;" hidden><span style="font-size:18px;margin-right:5px;margin-left:15px;"><b>{{items.Name}}:</b></span><span class="{{items.id}}" style="font-size:18px;">1</span></div>
+{% endfor %}
+</div>
+{% else %}
+<div id="orderslist">
+</div>
+{% endif %}
+</div>
 </div>
 </div>
 </div>
 <script>
 $(document).ready(function(){
+$('.increment').on('click',(function(e) {
+  var id= $(this).attr('value')
+  if(document.getElementById(id).value<document.getElementById(id).max)
+  {
+    document.getElementById(id).value++;
+    document.getElementsByClassName(id)[0].innerText++;
+  }
+}));
+$('.decrement').on('click',(function(e) {
+  var id= $(this).attr('value')
+  if(document.getElementById(id).value>document.getElementById(id).min)
+  {
+    document.getElementById(id).value--;
+    document.getElementsByClassName(id)[0].innerText--;
+  }
+}));
 $("input:checkbox").change(function() { 
     var rssId = $(this).attr('value')
-    if($(this).is(":checked")) 
-        $("#"+rssId).show();
-    else 
+    if($(this).is(":checked"))
+    { 
+      $("#"+rssId).show();
+      if ($("#orderslist")){
+           $("."+rssId).show();
+           document.getElementById("orderslist").appendChild(document.getElementById(rssId));
+      }
+      
+    }
+    else
+    { 
         $("#"+rssId).hide();
+        if ($("#orderslist")){
+           $("."+rssId).hide();
+      }
+    }
 }); 
 $('#orderForm').on('submit',(function(e) {
     e.preventDefault();
@@ -135,6 +179,7 @@ $('#orderForm').on('submit',(function(e) {
            {
                $("#order").html(data);
                $("#order").show();
+               document.getElementById("orderForm").reset();
            },
            error: function(data)
            {
@@ -149,8 +194,7 @@ $('#checkout').on('click',(function(e) {
            url: 'checkout', 
            success: function(data)
            {
-               alert(data)
-               window.location.reload();
+               $("#menusection").html(data);
            },
            error: function(data)
            {
@@ -159,7 +203,18 @@ $('#checkout').on('click',(function(e) {
         });
     }));
 });
-</script>
+var submitAnswer = function() {
+
+  var radios = document.getElementsByName('choice');
+  var val= "";
+  for (var i = 0, length = radios.length; i < length; i++) {
+      if (radios[i].checked) {
+         val = radios[i].value; 
+         break;
+       }
+  }
+};
+</script> 
 {%endif%}
 </div>
 </body>
@@ -184,6 +239,74 @@ input[type=number]:focus
     cursor:pointer
 }
 </style>
+<style>
+.dropbtn {
+  background-color: antiquewhite;
+  text-decoration: none;
+  border-radius:20px;
+  color: black;
+  width:80px;
+  text-align: center;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  position: relative;
+  display:inline-block;
+  cursor:pointer;
+}
 
+.dropdown {
+  padding-bottom:10px;
+  display: block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  left:200px;
+  top:0px;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+.dropbtn:active
+{
+  background-color: black;
+}
+
+.dropbtn:focus {
+  background-color: black;
+}
+.tab .dropdown-content {
+  display: none;
+}
+
+.tab .dropdown-content:target {
+  display: block;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number]{
+    -moz-appearance: textfield;
+}
+</style>
 </html>
+
+
+
 

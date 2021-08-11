@@ -1,0 +1,30 @@
+<p><b>Total Amount:{{total_amount}}</b></p>
+<div style="overflow-y:scroll;height:400px;width:600px;">
+
+<table style="width:100%">
+<tr>
+    <th>No:</th>
+    <th>Table Number</th>
+    <th>Items_Ordered</th>
+    <th>bill_amount</th>
+  </tr>
+{% for bill in bill_list %}
+<tr>
+<th>{{bill.id}}</th>
+<th>{{bill.table_num}}</th>
+<th>
+{% load custom_tags %}
+{{bill.items_ordered | dict}}
+</th>
+<th>{{bill.amount}}</th>
+</tr>
+{% endfor %}
+</table>
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>
+</div>
+
+

@@ -32,7 +32,7 @@
 {%if request.GET.next %}
    <input type="hidden" name="next" value="{{request.GET.next}}">
 {% endif %}
-<tr><td><input type="submit" style="margin:15px;" ></td><td><input type="Reset" value="cancel"></td></tr>
+<tr><td><input type="submit" style="margin:15px;cursor:pointer;" ></td><td><input type="Reset" value="cancel" style="cursor:pointer"></td></tr>
 </table>
 {% if error%}
 <p>Invalid Credentials</p>
@@ -45,7 +45,7 @@
 {% csrf_token %}
 {{ SignUp }}
 <p></p>
-<tr><td><input type="submit" style="margin:15px;"></td><td><input type="Reset" value="cancel"></td></tr>
+<tr><td><input type="submit" style="margin:15px;cursor:pointer;"></td><td><input type="Reset" value="cancel" style="pointer:cursor"></td></tr>
 </table>
 </form>
 {% for error  in SignUp.first_name.errors %}
@@ -117,6 +117,27 @@ function recievemessage()
   textnode.value=null;
    console.log("done");
 }
+</script>
+<style>
+.buttonstyling
+{
+  background-color: #7F00FF;
+   cursor:pointer;
+   outline: none;
+}
+</style>
+<script>
+$(window).on('load', function(){
+    $('#x').addClass('buttonstyling');
+})
+$('#x').on('click', function(){
+    $('#y').removeClass('buttonstyling');
+    $(this).addClass('buttonstyling');
+})
+$('#y').on('click', function(){
+    $('#x').removeClass('buttonstyling');
+    $(this).addClass('buttonstyling');
+})
 </script>
 </body>
 

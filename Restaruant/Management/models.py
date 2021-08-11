@@ -1,16 +1,22 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager
-from django.db.models.fields import BooleanField
+from django.db.models.fields import BooleanField, IntegerField
+from django_mysql.models import ListCharField
+class Bill(models.Model):
+    id=models.AutoField(primary_key=True);
+    amount=models.IntegerField();
+    table_num=models.IntegerField();
+    items_ordered=models.CharField(max_length=255);
 class foodtype(models.Model):
     type=models.CharField(primary_key=True,max_length=255)
 class item(models.Model):
-    id=models.CharField(primary_key=True,max_length=255);
-    Name=models.CharField(max_length=255);
+    id=models.AutoField(primary_key=True);
+    Name=models.CharField(max_length=255,unique=True);
     Remaining=models.IntegerField();
     price=models.FloatField();
     type=models.ForeignKey(foodtype,on_delete=models.CASCADE)
 class table(models.Model):
-    id=models.IntegerField(primary_key=True);
+    id=models.AutoField(primary_key=True);
     Seating_Capacity=models.IntegerField();
     Available=models.BooleanField(default=True)
     presentbill=models.FloatField(default=0);

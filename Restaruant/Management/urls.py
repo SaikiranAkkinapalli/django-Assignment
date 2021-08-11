@@ -11,5 +11,6 @@ urlpatterns = [
     path('order',views.orderrecieve),
     path('checkout',views.checkout),
     path('signup',views.signup),
+    path('ShowBill',views.ShowBill),
     path('logout',views.loggingout),
 ]

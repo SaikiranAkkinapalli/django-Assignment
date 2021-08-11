@@ -1,3 +1,4 @@
+from django.db.models.aggregates import Avg
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.http import HttpResponseBadRequest,JsonResponse
@@ -6,10 +7,11 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .forms import Additem,AddFoodtype,AddTable,CustomerForm,LoginForm,SignUpForm
 from django.contrib.auth import authenticate,login
-from .models import UserModel, foodtype,item,table
+from .models import UserModel, foodtype,item,table,Bill
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.contrib.auth import logout
+from django.db.models import Sum
 def home(request):
     if request.user.is_authenticated: 
         return render(request,'index.html')
@@ -88,6 +90,13 @@ def addFoodType(request):
             if form.is_valid():
                 form.save()
                 boolinsert=True
+            else:
+                context={
+                    "form":form,
+                    "boolinsert":False,
+                    "submission":"addType"
+                }
+                return render(request,'form.html',context)
     form=AddFoodtype()
     submission="addType"
     return render(request,'form.html',{'form':form,'submission':submission,'boolinsert':boolinsert})
@@ -134,24 +143,36 @@ def orderrecieve(request):
         tablenum=request.session['tablenum']
         current_table=table.objects.get(id=tablenum)
         items_qset=item.objects.all()
+        if 'ordered_items' in request.session:
+            ordered_items=request.session['ordered_items']
+        else:
+            ordered_items={}
         for items in items_qset:
-            if request.POST.get(items.id)!='' and int(request.POST.get(items.id))<=items.Remaining:
-                current_table.presentbill=current_table.presentbill+(int(request.POST.get(items.id))*items.price)
-                items.Remaining=items.Remaining-int(request.POST.get(items.id))
-                current_table.save()
-                items.save()
+            if request.POST.get(items.Name) is not None and int(request.POST.get(str(items.id)))<=items.Remaining:
+                x=ordered_items.get(items.Name)
+                if x:
+                    ordered_items[items.Name]=int(request.POST.get(str(items.id)))+int(ordered_items[items.Name])
+                else:
+                    ordered_items[items.Name]=request.POST.get(str(items.id))
+                    current_table.presentbill=current_table.presentbill+(int(request.POST.get(str(items.id)))*items.price)
+                    items.Remaining=items.Remaining-int(request.POST.get(str(items.id)))
+                    current_table.save()
+                    items.save()
+        print(ordered_items)
+        request.session['ordered_items']=ordered_items
         return HttpResponse("Ordered Succesfully", content_type="text/plain")
 def checkout(request):
     tablenum=request.session['tablenum']
+    ordered_items=request.session['ordered_items']
     current_table=table.objects.get(id=tablenum)
     bill=current_table.presentbill
+    newBill=Bill(amount=bill,table_num=tablenum,items_ordered=str(ordered_items))
+    newBill.save()
     current_table.totalbill+=current_table.presentbill
     current_table.presentbill=0
     current_table.Available=1
     current_table.save()
-    del request.session['tablenum']
-    message="Your Bill is "+str(bill)
-    return HttpResponse(message, content_type="text/plain")
+    return render(request,'customerbill.html',{'ordered_items':request.session['ordered_items'],'bill':bill})
 def signup(request):
     form1= SignUpForm()
     form2= LoginForm()
@@ -172,5 +193,9 @@ def loggingout(request):
     print(request)
     logout(request)
     return redirect(home)
+def ShowBill(request):
+    total_amount=table.objects.all().aggregate(Sum('totalbill'))
+    bill_list=Bill.objects.all()
+    return render(request,'bill.html',{'bill_list':bill_list,'total_amount':total_amount['totalbill__sum']})
 def error_404(request, exception):
     return render(request,'error.html',{'error':"No View"})

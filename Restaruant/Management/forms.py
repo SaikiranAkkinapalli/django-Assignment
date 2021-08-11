@@ -55,7 +55,7 @@ class Additem(ModelForm):
         if not number_check(data):
             raise forms.ValidationError('The Remaining items should be a number')
         return data
-    def clean_Remaining(self):
+    def clean_price(self):
         data=self.cleaned_data.get('price')
         if not price_check(data):
             raise forms.ValidationError('The price should be a float')
