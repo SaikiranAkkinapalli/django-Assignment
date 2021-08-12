@@ -116,14 +116,12 @@ $("input:checkbox").change(function() {
 <div id="order" hidden><b>Ordered Successfully</b></div>
 <div style="position:absolute;right:0px;top:0px;width:400px;height:400px;background-color:#f1f1f1;display:flex;flex-direction:column;">
 <div style="text-align: center;font-size:20px;margin-top:5px;"><b>------Your Orders------</b></div>
+<div id="orderslist">
 {% if 'ordered_items' in request.session%}
-<div id="already_ordered">
 {% for key, value in request.session.ordered_items.items %}
 <div style="margin-top:10px;"><span style="font-size:18px;margin-right:5px;margin-left:15px;"><b>{{key}}:</b></span><span class="{{key}}" style="font-size:18px;">{{value}}</span></div>
 {% endfor %}
-</div>
 {% endif %}
-<div id="orderslist">
 </div>
 </div>
 </div>
@@ -149,24 +147,26 @@ $('.decrement').on('click',(function(e) {
 }));
 $("input:checkbox").change(function() { 
     var rssId = $(this).attr('value')
-    var xid=$(this).attr('name')
     if($(this).is(":checked"))
     { 
       $("#"+rssId).show();
-      if (document.getElementsByClassName(rssId)[0]){
-          $("."+rssId).show();
-        document.getElementById("orderslist").appendChild(document.getElementsByClassName(rssId)[0]);
+      if (document.getElementById("orderslist").contains(document.getElementsByClassName(rssId)[1])){
+           document.getElementsByClassName(rssId)[0].innerText++;
       }
       else
       {
-        document.getElementsByClassName(rssId)[0]++;
+        $("."+rssId).show();
+        document.getElementById("orderslist").appendChild(document.getElementsByClassName(rssId)[0]);
       }
       
     }
     else
     { 
         $("#"+rssId).hide();
-        $("."+rssId).hide();
+        var y=document.getElementById("orderslist")
+        if (y){
+           $("."+rssId).hide();
+      }
     }
 }); 
 $('#orderForm').on('submit',(function(e) {
@@ -188,6 +188,7 @@ $('#orderForm').on('submit',(function(e) {
            {
                 $("#div_place").show(); // the message
            }
+           window.location = 'http://127.0.0.1:8000/customer'
         });
     }));
 $('#checkout').on('click',(function(e) {

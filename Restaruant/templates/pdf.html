@@ -1,0 +1,29 @@
+{% load static %}
+<div class="flexcontainer">
+<div style="background-color:#7F00FF;flex:1;display:flex;flex-direction:column;">
+<div style="padding-top:2.5px;padding-left:15px;"><img src='https://image.similarpng.com/very-thumbnail/2021/06/Cartoon-Funny-chef-for-culinary-business-and-restaurant-on-transparent-background-PNG.png' style="height:55px;width:55px;border-radius:32.5px;margin-right:20px;background:transparent;"><span id="title_setting" style="width:100%;font-size:50px;color:antiquewhite;margin-left:10px;"><i>Restaruant Management</i></span></div>
+</div>
+<div style="display: flex;margin-top:25px;"><p style="font-size:20px;">Your table number: <b>{{tablenum}}</b></p></div>
+<table style="margin-top:30px;width: 50%;">
+<tr><td>Item</td><td>Quantity</td>
+{% for key,value in ordered_items.items %}
+<tr>
+<td>{{key}}</td><td>{{ value }}</td>
+{% endfor %}
+<tr><td>Total Bill</td><td>{{bill}}</td>
+</table>
+<div style="display: flex;text-align: center;"><p style="font-size:20px;"><b>----Thank you Visit Again----</b></p></div>
+<style>
+th, td {
+    border: 1px solid #ddd;
+  text-align: center;
+  font-size:15px;
+  padding-top:5px;
+  padding-bottom:5px;
+}
+table {
+     border: 1px solid #ddd;
+  width: 1000px;
+}
+</style>
+</div>

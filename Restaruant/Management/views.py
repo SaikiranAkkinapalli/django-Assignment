@@ -15,6 +15,8 @@ from django.db.models import Sum
 import io
 from django.http import FileResponse
 from reportlab.pdfgen import canvas
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 def home(request):
     if request.user.is_authenticated: 
         return render(request,'index.html')
@@ -169,6 +171,7 @@ def checkout(request):
     ordered_items=request.session['ordered_items']
     current_table=table.objects.get(id=tablenum)
     bill=current_table.presentbill
+    request.session['bill']=bill
     newBill=Bill(amount=bill,table_num=tablenum,items_ordered=str(ordered_items))
     newBill.save()
     current_table.totalbill+=current_table.presentbill
@@ -203,10 +206,11 @@ def ShowBill(request):
 def error_404(request, exception):
     return render(request,'error.html',{'error':"No View"})
 def bill_download(request):
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer)
-    p.drawString(100, 700,eval(request.session['ordered_items']))
-    p.showPage()
-    p.save()
-    buffer.seek(0)
-    return FileResponse(buffer, as_attachment=True, filename='bill.pdf')
+    template_path='pdf.html'
+    response=HttpResponse(content_type='application/pdf')
+    response['Content-Disposition']='attachment; filename="bill.pdf"'
+    template=get_template(template_path)
+    context={'ordered_items':request.session['ordered_items'],'tablenum':request.session['tablenum'],'bill':request.session['bill']}
+    html=template.render(context)
+    pisa_status=pisa.CreatePDF(html,dest=response)
+    return response
